@@ -68,7 +68,10 @@ public class HelloVworld {
 			e.printStackTrace();
 		} catch (KeyManagementException e) {
 			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 		}
+
 
 	}
 

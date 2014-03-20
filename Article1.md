@@ -235,8 +235,6 @@ public class HelloVworld {
 			e.printStackTrace();
 		} catch (InvalidLoginFaultMsg e) {
 			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
 		}
 
 	}
