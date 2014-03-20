@@ -1,4 +1,4 @@
-# Hello, vWorld
+# Hello, VMware World
 
 If you are a software developer new to the VMware management stack, you may have noticed that the learning curve for 
 it is a little steep.  This is partly because of the breadth of offerings and the number of different ways you may 
@@ -42,24 +42,24 @@ The download site has two zip files:  VMware-vSphere-SDK-5.5.0-<nnn>.zip and
 UpdateSite-SDK-vSphereManagement-Java_5.5.0.<nnn>.zip.  For this exercise we will use 
 VMware-vSphere-SDK-5.5.0-<nnn>.zip. 
 
-## Getting set up:
+## Getting set up
 
 * Unzip the SDK into a known location.  I used /opt/vmware.  All files will be in a folder called "SDK"
 
-![](pic1.jpg)
+![](images/pic1.jpg)
 
 * Start Eclipse, and create a new Java Project, "HelloVworld".  Click "Next" on the new project wizard
 
-![](pic2.png)
+![](images/pic2.png)
 
 * Select Libraries on the Java Settings Tab, and click "Add External JARs".  Navigate to the 
 SDK/vsphere-ws/java/JAXWS/lib folder and select vim25.jar
 
-![](pic2.png)
+![](images/pic2.png)
 
 * Click Open, then Finish
 
-![](pic3.png)
+![](images/pic3.png)
 
 That's it for setup.  With our new project, we are now ready to start the HelloVworld program.
 
@@ -86,12 +86,12 @@ Add in the url we use to connect to API.  This will be the address of your vCent
 "/sdk/vimService".  Let's also add the user name and password.
  
 ```java
-	public static void main(String[] args) {
-		String url = "https://yourhostname/sdk/vimService";
-		String user = "username";
-		String password = "password";
+public static void main(String[] args) {
+	String url = "https://yourhostname/sdk/vimService";
+	String user = "username";
+	String password = "password";
 
-	}
+}
 ```
 
 Now we add the code to set the connection.  Use an instance of VimService to obtain a VimPortType.  The VimPortType 
@@ -297,7 +297,7 @@ This creates a new trusted key store on the current directory called "jssecacert
 with the java property javax.net.ssl.trustStore to have our version of SSL use this keystore.  In Eclipse, 
 we set it on the Arguments tab of the run configuration.
 
-![](pic8.png)
+![](images/pic8.png)
  
 Or use the –D option of the command line
 
