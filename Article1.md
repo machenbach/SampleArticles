@@ -42,7 +42,7 @@ The download site has two zip files:  VMware-vSphere-SDK-5.5.0-<nnn>.zip and
 UpdateSite-SDK-vSphereManagement-Java_5.5.0.<nnn>.zip.  For this exercise we will use 
 VMware-vSphere-SDK-5.5.0-<nnn>.zip. 
 
-##Getting set up:
+## Getting set up:
 
 * Unzip the SDK into a known location.  I used /opt/vmware.  All files will be in a folder called "SDK"
 
@@ -244,41 +244,171 @@ public class HelloVworld {
 }
 ```
 
-Let's compile and run.  In Eclipse, right click on the "HelloVworld.java" file in the project browser, and select "Run as > Java Application", or from the command line:
+Let's compile and run.  In Eclipse, right click on the "HelloVworld.java" file in the project browser, and select 
+"Run as > Java Application", or from the command line:
 
+```
+C:\HelloVworld\src>javac -cp ".; <SDK libr>/vim25.jar" HelloVworld.java
+C:\HelloVworld\src>java -cp ".; <SDK libr>/vim25.jar" HelloVworld
+```
 Unless you installed vCenter with trusted certificates, you got an error like this:	
 
-This is caused by the self-signed certificates generated for SSL with vCenter.  The vSphere API/SDK Documentation describes several solutions for this.  We will discuss two of them here.
+```
+Exception in thread "main" com.sun.xml.internal.ws.client.ClientTransportException: HTTP transport error: javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at com.sun.xml.internal.ws.transport.http.client.HttpClientTransport.getOutput(HttpClientTransport.java:117)
+	at com.sun.xml.internal.ws.transport.http.client.HttpTransportPipe.process(HttpTransportPipe.java:194)
+	at com.sun.xml.internal.ws.transport.http.client.HttpTransportPipe.processRequest(HttpTransportPipe.java:122)
+	at com.sun.xml.internal.ws.transport.DeferredTransportPipe.processRequest(DeferredTransportPipe.java:123)
+	at com.sun.xml.internal.ws.api.pipe.Fiber.__doRun(Fiber.java:626)
+	at com.sun.xml.internal.ws.api.pipe.Fiber._doRun(Fiber.java:585)
+	at com.sun.xml.internal.ws.api.pipe.Fiber.doRun(Fiber.java:570) …
 
-Handling SSL in the Developer Environment
+```
 
-First we will look at getting and using the server's certificate, using a utility written by Andreas Sterbenz of Sun called InstallCert.  Source and references for it can be found on github.  The vSphere API/SDK Documentation also describes other ways to get this in the section "Obtaining Server Certificates", which you may want to read.
+This is caused by the self-signed certificates generated for SSL with vCenter.  The vSphere API/SDK Documentation 
+describes several solutions for this.  We will discuss two of them here.
 
-To run InstallCert, you just supply the host and port of the server, and the server's certificate will be installed into a new keystore.  I should point out that the code for InstallCert is somewhat brittle.  If you intend to use it often, you may want to refactor it.
+## Handling SSL in the Developer Environment
+
+First we will look at getting and using the server's certificate, using a utility written by Andreas Sterbenz of 
+Sun called InstallCert.  Source and references for it can be found on github.  The vSphere API/SDK Documentation 
+also describes other ways to get this in the section "Obtaining Server Certificates", which you may want to read.
+
+To run InstallCert, you just supply the host and port of the server, and the server's certificate will be 
+installed into a new keystore.  I should point out that the code for InstallCert is somewhat brittle.  If you 
+intend to use it often, you may want to refactor it.
+
+```
+HelloVworld\src> java InstallCert 1.2.3.4
+Loading KeyStore C:\opt\Java\jdk-1.7.0_25\jre\lib\security\cacerts...
+Opening connection to 1.2.3.4:443...
+Starting SSL handshake...
+ <Stack trace from invalid certificate>
+Server sent 1 certificate(s):
+ <Certificate Information>
+Enter certificate to add to trusted keystore or 'q' to quit: [1]
+1
+ <More output>
+Added certificate to keystore 'jssecacerts' using alias '1.2.3.4-1'
+```
 
  
-This creates a new trusted key store on the current directory called "jssecacerts".  We can use this keystore with the java property javax.net.ssl.trustStore to have our version of SSL use this keystore.  In Eclipse, we set it on the Arguments tab of the run configuration.
- 
+This creates a new trusted key store on the current directory called "jssecacerts".  We can use this keystore 
+with the java property javax.net.ssl.trustStore to have our version of SSL use this keystore.  In Eclipse, 
+we set it on the Arguments tab of the run configuration.
 
+![](pic8.png)
+ 
 Or use the –D option of the command line
 
-
+```
+HelloVworld\src>  java -Djavax.net.ssl.trustStore=jssecacerts -cp ".; <SDK libr>/vim25.jar" HelloVworld
+```
 
 We should now finally see the output of the HelloVworld program
 
+```
+VMware vCenter Server 5.5.0 build-1398495
+Server type is VirtualCenter
+API version is 5.5.0
+```
  
-This method does not always work, however.  An alternative that will always work for a development system is to modify SSL so that it will trust all certificates.  This method must never be used in a production environment.
+This method does not always work, however.  An alternative that will always work for a development system is 
+to modify SSL so that it will trust all certificates.  **This method must never be used in a production environment.**
 
 To trust all certificates, we will introduce a class called DisableSecurity. 
  
+ ```java
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+public class DisableSecurity {
+
+    /*
+     * Authentication is handled by using a TrustManager and supplying a host
+     * name verifier method. (The host name verifier is declared in the main function.)
+     *
+     * Do not use this in production code!  It is only for samples.
+     */
+    private static class TrustAllTrustManager implements javax.net.ssl.TrustManager, javax.net.ssl.X509TrustManager {
+
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+
+        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType)
+            throws java.security.cert.CertificateException {
+            return;
+        }
+
+        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType)
+            throws java.security.cert.CertificateException {
+            return;
+        }
+    }
+
+	public static void trustEveryone()
+			throws NoSuchAlgorithmException, KeyManagementException {
+		// Declare a host name verifier that will automatically enable
+        // the connection. The host name verifier is invoked during
+        // the SSL handshake.
+        javax.net.ssl.HostnameVerifier verifier = new HostnameVerifier() {
+            public boolean verify(String urlHostName, SSLSession session) {
+                return true;
+            }
+        };
+        // Create the trust manager.
+        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[1];
+        javax.net.ssl.TrustManager trustManager = new TrustAllTrustManager();
+        trustAllCerts[0] = trustManager;
+
+        // Create the SSL context
+        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+
+        // Create the session context
+        javax.net.ssl.SSLSessionContext sslsc = sc.getServerSessionContext();
+
+        // Initialize the contexts; the session context takes the trust manager.
+        sslsc.setSessionTimeout(0);
+        sc.init(null, trustAllCerts, null);
+
+        // Use the default socket factory to create the socket for the secure connection
+        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        // Set the default host name verifier to enable the connection.
+        HttpsURLConnection.setDefaultHostnameVerifier(verifier);
+	}
+
+
+}
+ ```
  
 To use this, we now insert a call to DisableSecurity.trustEveryone before making any ssl calls:
- 
+
+```java
+try {
+	// Disable all SSL trust security
+	DisableSecurity.trustEveryone();
+	
+	ServiceContent serviceContent = 
+			vimPort.retrieveServiceContent(serviceInstance);
+	vimPort.login(serviceContent.getSessionManager(), user, password, null);
+	...
+```
+
 Note that this class is essentially the same as the FakeTrustManager described in the VMware Developers's Center samples.
 
 Once again, when we run the sample, we should see the output.
 
-
+```
+C:\HelloVworld\src>java -cp ".; <SDK libr>/vim25.jar" HelloVworld
+VMware vCenter Server 5.5.0 build-1398495
+Server type is VirtualCenter
+API version is 5.5.0
+```
 
 In the next article, we will use this base to start retrieving information from vCenter to do interesting things.
 
