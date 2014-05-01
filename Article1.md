@@ -1,5 +1,8 @@
 # Hello, VMware World
 
+Testing to see how this works.
+
+
 If you are a software developer new to the VMware management stack, you may have noticed that the learning curve for 
 it is a little steep.  This is partly because of the breadth of offerings and the number of different ways you may 
 need to use VMware products.  This can lead to an overload of information.
@@ -259,7 +262,7 @@ Exception in thread "main" com.sun.xml.internal.ws.client.ClientTransportExcepti
 	at com.sun.xml.internal.ws.transport.DeferredTransportPipe.processRequest(DeferredTransportPipe.java:123)
 	at com.sun.xml.internal.ws.api.pipe.Fiber.__doRun(Fiber.java:626)
 	at com.sun.xml.internal.ws.api.pipe.Fiber._doRun(Fiber.java:585)
-	at com.sun.xml.internal.ws.api.pipe.Fiber.doRun(Fiber.java:570) …
+	at com.sun.xml.internal.ws.api.pipe.Fiber.doRun(Fiber.java:570) ï¿½
 
 ```
 
@@ -297,7 +300,7 @@ we set it on the Arguments tab of the run configuration.
 
 ![](images/pic8.png)
  
-Or use the –D option of the command line
+Or use the ï¿½D option of the command line
 
 ```
 HelloVworld\src>  java -Djavax.net.ssl.trustStore=jssecacerts -cp ".; <SDK libr>/vim25.jar" HelloVworld
